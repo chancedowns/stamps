@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
   # convert booleans, dates, or decimals consistently.
   # See: https://github.com/rubiii/savon/issues/301
   s.add_runtime_dependency('savon')
-  s.add_runtime_dependency('httpi', '0.7.9')
+  s.add_runtime_dependency('httpi', '>= 0.7.9')
   s.add_runtime_dependency('json', '~> 1.0')
   s.add_runtime_dependency('multi_json', '~> 1.0')
   s.add_runtime_dependency('hashie', '~> 1.0.0')
