@@ -9,13 +9,23 @@ module Stamps
   #
   module Mapping
 
-    class Account < Hashie::Trash
+    # Base class that removes nil values from hash output
+    class BaseMapping < Hashie::Trash
+      include Hashie::Extensions::Dash::IndifferentAccess
+
+      # Override to_hash to remove nil values
+      def to_hash
+        super.reject { |_, v| v.nil? }
+      end
+    end
+
+    class Account < BaseMapping
       property :Authenticator, :from => :authenticator
       property :Credentials,   :from => :credentials
       property :PostageBalance, :from => :postage_balance
     end
 
-    class AuthenticateUser < Hashie::Trash
+    class AuthenticateUser < BaseMapping
       property :Credentials,   :from => :credentials
 
       def credentials=(val)
@@ -23,29 +33,29 @@ module Stamps
       end
     end
 
-    class Credentials < Hashie::Trash
+    class Credentials < BaseMapping
       property :IntegrationID, :from => :integration_id
       property :Username,      :from => :username
       property :Password,      :from => :password
     end
 
-    class PostageBalance < Hashie::Trash
+    class PostageBalance < BaseMapping
       property :AvailablePostage,  :from => :available_postage
       property :ControlTotal,      :from => :control_total
     end
 
-    class GetPostageStatus < Hashie::Trash
+    class GetPostageStatus < BaseMapping
       property :TransactionID, :from => :transaction_id
     end
 
-    class Rates < Hashie::Trash
+    class Rates < BaseMapping
       property :Authenticator, :from => :authenticator
       property :Credentials,   :from => :credentials
       property :Rate,          :from => :rate
       property :Carrier,       :from => :carrier
     end
 
-    class Rate < Hashie::Trash
+    class Rate < BaseMapping
       property :FromZIPCode,             :from => :from_zip_code
       property :From,                    :from => :from
       property :ToZIPCode,               :from => :to_zip_code
@@ -100,7 +110,7 @@ module Stamps
       end
     end
 
-    class AddOnsArray < Hashie::Trash
+    class AddOnsArray < BaseMapping
       property :AddOnV9,     :from => :add_on_v9
       property :AddOnV17,     :from => :add_on_v17
 
@@ -115,7 +125,7 @@ module Stamps
       end
     end
 
-    class AddOnV9 < Hashie::Trash
+    class AddOnV9 < BaseMapping
       property :Amount,                    :from => :amount
       property :AddOnType,                 :from => :add_on_type
       property :ProhibitedWithAnyOf,       :from => :prohibited_with_any_of
@@ -125,7 +135,7 @@ module Stamps
       property :RequiresAllOf,             :from => :requires_all_of
     end
 
-    class AddOnV17 < Hashie::Trash
+    class AddOnV17 < BaseMapping
       property :Amount,                    :from => :amount
       property :AddOnType,                 :from => :add_on_type
       property :ProhibitedWithAnyOf,       :from => :prohibited_with_any_of
@@ -135,7 +145,7 @@ module Stamps
       property :RequiresAllOf,             :from => :requires_all_of
     end
 
-    class Stamp < Hashie::Trash
+    class Stamp < BaseMapping
       property :Authenticator,                        :from => :authenticator
       property :Credentials,   :from => :credentials
       property :IntegratorTxID,                       :from => :transaction_id
@@ -179,13 +189,12 @@ module Stamps
         self[:Rate] = Rate.new(val)
       end
 
-      # Maps :customs to Customs map
       def customs=(val)
         self[:Customs] = Customs.new(val)
       end
     end
 
-    class Address < Hashie::Trash
+    class Address < BaseMapping
       property :Authenticator, :from => :authenticator
       property :Credentials,   :from => :credentials
       property :FullName,      :from => :full_name
@@ -215,7 +224,7 @@ module Stamps
       property :OverrideHash,  :from => :override_hash
     end
 
-    class CleanseAddress < Hashie::Trash
+    class CleanseAddress < BaseMapping
       property :Authenticator, :from => :authenticator
       property :Credentials,   :from => :credentials
       property :Address,       :from => :address
@@ -226,7 +235,7 @@ module Stamps
       end
     end
 
-    class PurchasePostage < Hashie::Trash
+    class PurchasePostage < BaseMapping
       property :Authenticator,  :from => :authenticator
       property :Credentials,   :from => :credentials
       property :IntegratorTxID, :from => :transaction_id
@@ -234,20 +243,20 @@ module Stamps
       property :ControlTotal,   :from => :control_total
     end
 
-    class GetPurchaseStatus < Hashie::Trash
+    class GetPurchaseStatus < BaseMapping
       property :Authenticator, :from => :authenticator
       property :Credentials,   :from => :credentials
       property :TransactionID, :from => :transaction_id
     end
 
-    class CancelStamp< Hashie::Trash
+    class CancelStamp< BaseMapping
       property :Authenticator,  :from => :authenticator
       property :Credentials,   :from => :credentials
       property :StampsTxID,     :from => :transaction_id
       property :TrackingNumbers, :from => :tracking_numbers
     end
 
-    class CarrierPickup < Hashie::Trash
+    class CarrierPickup < BaseMapping
       property :Authenticator,               :from => :authenticator
       property :Credentials,   :from => :credentials
       property :FirstName,                   :from => :first_name
@@ -270,7 +279,7 @@ module Stamps
       property :SpecialInstruction,          :from => :special_instruction
     end
 
-    class Customs < Hashie::Trash
+    class Customs < BaseMapping
       property :ContentType,       :from => :content_type
       property :Comments,          :from => :comments
       property :LicenseNumber,     :from => :license_number
@@ -287,14 +296,14 @@ module Stamps
       end
     end
 
-    class CustomsLinesArray < Hashie::Trash
+    class CustomsLinesArray < BaseMapping
       property :CustomsLine,     :from => :custom
       def custom=(customs)
         self[:CustomsLine] = customs.collect{ |val| CustomsLine.new(val).to_hash }
       end
     end
 
-    class CustomsLine < Hashie::Trash
+    class CustomsLine < BaseMapping
       property :Description,     :from => :description
       property :Quantity,        :from => :quantity
       property :Value,           :from => :value
@@ -304,13 +313,13 @@ module Stamps
       property :CountryOfOrigin, :from => :country_of_origin
     end
 
-    class TrackShipment < Hashie::Trash
+    class TrackShipment < BaseMapping
       property :Authenticator, :from => :authenticator
       property :Credentials,   :from => :credentials
       property :StampsTxID,    :from => :stamps_transaction_id
     end
 
-    class CreateManifest < Hashie::Trash
+    class CreateManifest < BaseMapping
       property :Authenticator,     :from => :authenticator
       property :IntegratorTxID,    :from => :integrator_tx_id
       property :StampsTxIds,       :from => :stamps_tx_ids
@@ -334,7 +343,7 @@ module Stamps
       end
     end
 
-    class Reprint < Hashie::Trash
+    class Reprint < BaseMapping
       property :Authenticator,     :from => :authenticator
       property :IntegratorTxID,    :from => :integrator_tx_id
       property :StampsTxId,       :from => :stamps_tx_id
