@@ -20,10 +20,10 @@ module Stamps
       :endpoint].freeze
 
     # The endpoint that will be used to connect if none is set
-    DEFAULT_ENDPOINT = 'https://swsim.stamps.com/swsim/swsimv29.asmx'.freeze
+    DEFAULT_ENDPOINT = 'https://swsim.stamps.com/swsim/SwsimV135.asmx'.freeze
 
     # The default namespace used on Stamps.com wsdl
-    DEFAULT_NAMESPACE = 'http://stamps.com/xml/namespace/2010/11/swsim/swsimv29'
+    DEFAULT_NAMESPACE = 'http://stamps.com/xml/namespace/2023/07/swsim/SwsimV135'
 
     DEFAULT_NAMESPACE_IDENTIFIER = :tns
 

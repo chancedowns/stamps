@@ -56,17 +56,14 @@ module Stamps
     end
 
     class Rate < BaseMapping
-      property :FromZIPCode,             :from => :from_zip_code
       property :From,                    :from => :from
-      property :ToZIPCode,               :from => :to_zip_code
-      property :ToCountry,               :from => :to_country
       property :To,                      :from => :to
       property :Amount,                  :from => :amount
       property :MaxAmount,               :from => :max_amount
       property :ServiceType,             :from => :service_type
+      property :ServiceDescription,      :from => :service_description
       property :PrintLayout,             :from => :print_layout
       property :DeliverDays,             :from => :deliver_days
-      property :Error,                   :from => :error
       property :WeightLb,                :from => :weight_lb
       property :WeightOz,                :from => :weight_oz
       property :PackageType,             :from => :package_type
@@ -75,6 +72,7 @@ module Stamps
       property :Width,                   :from => :width
       property :Height,                  :from => :height
       property :ShipDate,                :from => :ship_date
+      property :DeliveryDate,            :from => :delivery_date
       property :InsuredValue,            :from => :insured_value
       property :RegisteredValue,         :from => :registration_value
       property :CODValue,                :from => :cod_value
@@ -90,15 +88,18 @@ module Stamps
       property :DimWeighting,            :from => :dim_weighting
       property :AddOns,                  :from => :add_ons
       property :EffectiveWeightInOunces, :from => :effective_weight_in_ounces
-      property :IsIntraBMC,              :from => :is_intra_bmc
       property :Zone,                    :from => :zone
       property :RateCategory,            :from => :rate_category
       property :ToState,                 :from => :to_state
       property :CubicPricing,            :from => :cubic_pricing
+      property :CubicTier,               :from => :cubic_tier
+      property :HFPPremium,              :from => :hfp_premium
+      property :CubicZone,               :from => :cubic_zone
 
       # Maps :rate to AddOns map
       def add_ons=(addons)
-        self[:AddOns] = AddOnsArray.new(:add_on_v9 => addons[:add_on_v9], :add_on_v17 => addons[:add_on_v17])
+        return unless addons
+        self[:AddOns] = addons.map{ |addon| AddOnV20.new(addon).to_hash }
       end
 
       def from=(from_address)
@@ -145,43 +146,74 @@ module Stamps
       property :RequiresAllOf,             :from => :requires_all_of
     end
 
+    class AddOnV20 < BaseMapping
+      property :Amount,                    :from => :amount
+      property :AddOnType,                 :from => :add_on_type
+      property :ProhibitedWithAnyOf,       :from => :prohibited_with_any_of
+      property :RequiresAllOf,             :from => :requires_all_of
+      property :MissingData,               :from => :missing_data
+    end
+
     class Stamp < BaseMapping
       property :Authenticator,                        :from => :authenticator
-      property :Credentials,   :from => :credentials
+      property :Credentials,                          :from => :credentials
       property :IntegratorTxID,                       :from => :transaction_id
       property :TrackingNumber,                       :from => :tracking_number
       property :Rate,                                 :from => :rate
-      property :From,                                 :from => :from
-      property :To,                                   :from => :to
+      property :ReturnTo,                             :from => :return_to  # v135: was "From" in v57
       property :CustomerID,                           :from => :customer_id
       property :Customs,                              :from => :customs
       property :SampleOnly,                           :from => :sample
+      property :PostageMode,                          :from => :postage_mode
       property :ImageType,                            :from => :image_type
       property :EltronPrinterDPIType,                 :from => :label_resolution
       property :memo
-      property :recipient_email
+      property :cost_code_id
       property :deliveryNotification,                 :from => :notify
-      property :shipmentNotificationCC,               :from => :notify_crates
-      property :shipmentNotificationFromCompany,      :from => :notify_from_company
-      property :shipmentNotificationCompanyInSubject, :from => :notify_in_subject
+      property :ShipmentNotification,                 :from => :shipment_notification
       property :rotationDegrees,                      :from => :rotation
+      property :horizontalOffset,                     :from => :horizontal_offset
+      property :verticalOffset,                       :from => :vertical_offset
+      property :printDensity,                         :from => :print_density
       property :printMemo,                            :from => :print_memo
+      property :printInstructions,                    :from => :print_instructions
+      property :requestPostageHash,                   :from => :request_postage_hash
       property :nonDeliveryOption,                    :from => :non_delivery
+      property :RedirectTo,                           :from => :redirect_to
+      property :OutboundTransactionID,                :from => :outbound_transaction_id
+      property :OriginalPostageHash,                  :from => :original_postage_hash
+      property :ReturnImageData,                      :from => :return_image_data
+      property :InternalTransactionNumber,            :from => :internal_transaction_number
       property :PaperSize,                            :from => :paper_size
+      property :EmailLabelTo,                         :from => :email_label_to
+      property :PayOnPrint,                           :from => :pay_on_print
+      property :ReturnLabelExpirationDays,            :from => :return_label_expiration_days
+      property :ImageDpi,                             :from => :image_dpi
+      property :RateToken,                            :from => :rate_token
+      property :OrderId,                              :from => :order_id
+      property :BypassCleanseAddress,                 :from => :bypass_cleanse_address
+      property :ImageId,                              :from => :image_id
+      property :Reference1,                           :from => :reference_1
+      property :Reference2,                           :from => :reference_2
+      property :Reference3,                           :from => :reference_3
+      property :Reference4,                           :from => :reference_4
+      property :ReturnIndiciumData,                   :from => :return_indicium_data
+      property :ExtendedPostageInfo,                  :from => :extended_postage_info
+      property :EnclosedServiceType,                  :from => :enclosed_service_type
+      property :EnclosedPackageType,                  :from => :enclosed_package_type
+      property :OrderDetails,                         :from => :order_details
+      property :BrandingId,                           :from => :branding_id
+      property :NotificationSettingId,                :from => :notification_setting_id
+      property :GroupCode,                            :from => :group_code
+      property :Description,                          :from => :description
 
-      # Maps :from to Address map
-      def from=(val)
-        # Set the defult :from address from address
+      # v135: ReturnTo is the return address
+      def return_to=(val)
         if Stamps.return_address
-          self[:From] = Address.new(Stamps.return_address.merge!(val))
+          self[:ReturnTo] = Address.new(Stamps.return_address.merge!(val))
         else
-          self[:From] = Address.new(val)
+          self[:ReturnTo] = Address.new(val)
         end
-      end
-
-      # Maps :to to Address map
-      def to=(val)
-        self[:To] = Address.new(val)
       end
 
       # Maps :rate to Rate map
@@ -191,6 +223,10 @@ module Stamps
 
       def customs=(val)
         self[:Customs] = Customs.new(val)
+      end
+
+      def redirect_to=(val)
+        self[:RedirectTo] = Address.new(val) if val
       end
     end
 
@@ -238,9 +274,11 @@ module Stamps
     class PurchasePostage < BaseMapping
       property :Authenticator,  :from => :authenticator
       property :Credentials,   :from => :credentials
-      property :IntegratorTxID, :from => :transaction_id
       property :PurchaseAmount, :from => :amount
       property :ControlTotal,   :from => :control_total
+      property :MI,             :from => :machine_info
+      property :IntegratorTxID, :from => :transaction_id
+      property :SendEmail,      :from => :send_email
     end
 
     class GetPurchaseStatus < BaseMapping

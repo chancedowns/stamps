@@ -5,12 +5,19 @@ module Hashie
 
     class << self
       attr_reader :properties
+
+      # Override property to track declaration order
+      alias_method :original_property, :property
+
+      def property(property_name, options = {})
+        @properties ||= []
+        @properties << property_name unless @properties.include?(property_name)
+        original_property(property_name, options)
+      end
     end
 
-    # Use a n Array instead of a set since order is important
-    # TODO:  Look at https://github.com/ahoward/map
-    instance_variable_set('@properties', Array.new)
-
+    # Initialize properties array for each class
+    @properties = []
 
     # Sort the hash by the order in which the properties are declared
     def to_hash
