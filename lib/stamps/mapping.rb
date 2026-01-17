@@ -290,8 +290,28 @@ module Stamps
     class CancelStamp< BaseMapping
       property :Authenticator,  :from => :authenticator
       property :Credentials,   :from => :credentials
-      property :StampsTxID,     :from => :transaction_id
+      property :StampsTxIDs,     :from => :transaction_ids
       property :TrackingNumbers, :from => :tracking_numbers
+
+      # Custom setter for StampsTxIDs to create proper ArrayOfGuid structure
+      # v135 requires: <StampsTxIDs><guid>...</guid><guid>...</guid></StampsTxIDs>
+      def transaction_ids=(vals)
+        return unless vals
+        # Ensure vals is an array
+        vals = [vals] unless vals.is_a?(Array)
+        # Create the nested structure expected by v135
+        self[:StampsTxIDs] = { guid: vals }
+      end
+
+      # Custom setter for TrackingNumbers to create proper ArrayOfString structure
+      # v135 requires: <TrackingNumbers><string>...</string><string>...</string></TrackingNumbers>
+      def tracking_numbers=(vals)
+        return unless vals
+        # Ensure vals is an array
+        vals = [vals] unless vals.is_a?(Array)
+        # Create the nested structure expected by v135
+        self[:TrackingNumbers] = { string: vals }
+      end
     end
 
     class CarrierPickup < BaseMapping
@@ -372,12 +392,24 @@ module Stamps
         self[:FromAddress] = Address.new(from_address)
       end
 
+      # Custom setter for StampsTxIds to create proper ArrayOfGuid structure
+      # v135 requires: <StampsTxIds><guid>...</guid><guid>...</guid></StampsTxIds>
       def stamps_tx_ids=(tx_ids)
-        self[:StampsTxIds] = tx_ids.map {|id| {guid:id}}
+        return unless tx_ids
+        # Ensure tx_ids is an array
+        tx_ids = [tx_ids] unless tx_ids.is_a?(Array)
+        # Create the nested structure expected by v135
+        self[:StampsTxIds] = { guid: tx_ids }
       end
 
+      # Custom setter for TrackingNumbers to create proper ArrayOfString structure
+      # v135 requires: <TrackingNumbers><string>...</string><string>...</string></TrackingNumbers>
       def tracking_numbers=(tracking_numbers)
-        self[:TrackingNumbers] = tracking_numbers.map {|n| {string:n}}
+        return unless tracking_numbers
+        # Ensure tracking_numbers is an array
+        tracking_numbers = [tracking_numbers] unless tracking_numbers.is_a?(Array)
+        # Create the nested structure expected by v135
+        self[:TrackingNumbers] = { string: tracking_numbers }
       end
     end
 

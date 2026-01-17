@@ -27,7 +27,8 @@ module Stamps
       # @return [Hash]
       #
       def create!(params = {})
-        params[:authenticator] = authenticator_token unless params[:authenticator]
+        # Add authenticator FIRST so it appears in the correct position
+        params = { authenticator: authenticator_token }.merge(params) unless params[:authenticator]
         response = request('CreateIndicium', Stamps::Mapping::Stamp.new(params))
         response[:errors].empty? ? response[:create_indicium_response] : response
       end
@@ -42,7 +43,8 @@ module Stamps
       # Only one of IntegratorTxId, StampsTxId, or TrackingNumber should be provided to identify the original label.
       #
       def reprint(params)
-        params[:authenticator] = authenticator_token unless params[:authenticator]
+        # Add authenticator FIRST so it appears in the correct position
+        params = { authenticator: authenticator_token }.merge(params) unless params[:authenticator]
         response = request('ReprintIndicium', {indiciumRequest:Stamps::Mapping::Reprint.new(params).to_hash})
         response[:errors].empty? ? response[:reprint_indicium_response][:reprint_indicium_result] : response
       end
@@ -52,7 +54,8 @@ module Stamps
       # @param [Hash] authenticator
       #
       def cancel!(params = {})
-        params[:authenticator] = authenticator_token unless params[:authenticator]
+        # Add authenticator FIRST so it appears in the correct position
+        params = { authenticator: authenticator_token }.merge(params) unless params[:authenticator]
         response = request('CancelIndicium', Stamps::Mapping::CancelStamp.new(params))
         response[:errors].empty? ? response[:cancel_indicium_response] : response
       end
@@ -87,7 +90,8 @@ module Stamps
       # https://developer.stamps.com/soap-api/reference/swsimv135.html#createmanifest
       #
       def create_manifest(params = {})
-        params[:authenticator] ||= authenticator_token
+        # Add authenticator FIRST so it appears in the correct position
+        params = { authenticator: authenticator_token }.merge(params) unless params[:authenticator]
         params[:print_instructions] = false if !params.has_key?(:print_instructions)
         response = request('CreateManifest', Stamps::Mapping::CreateManifest.new(params))
         response[:errors].empty? ? response[:create_manifest_response][:end_of_day_manifests][:end_of_day_manifest][:manifest_url] : response
