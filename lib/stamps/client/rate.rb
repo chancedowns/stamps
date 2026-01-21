@@ -22,8 +22,8 @@ module Stamps
       def get_rates(params = {}, carrier = 'USPS')
         rates = Stamps::Mapping::Rates.new({
           :authenticator => authenticator_token,
+          :rate          => Stamps::Mapping::Rate.new(params),
           :carrier       => carrier,
-          :rate          => Stamps::Mapping::Rate.new(params)
         })
         response = request('GetRates', rates)
         if response[:get_rates_response].nil?

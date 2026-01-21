@@ -98,9 +98,13 @@ module Stamps
 
       # Maps :rate to AddOns map
       def add_ons=(addons)
-        return unless addons
-        self[:AddOns] = addons.map{ |addon| AddOnV20.new(addon).to_hash }
+        return unless addons&.any?
+
+        self[:AddOns] = {
+          AddOnV20: addons.map { |addon| AddOnV20.new(addon).to_hash }
+        }
       end
+
 
       def from=(from_address)
         self[:From] = Address.new(from_address)
@@ -264,6 +268,7 @@ module Stamps
       property :Authenticator, :from => :authenticator
       property :Credentials,   :from => :credentials
       property :Address,       :from => :address
+      property :FromZipCode,   :from => :from_zip_code
 
       # Maps :address to Address map
       def address=(val)
