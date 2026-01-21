@@ -13,11 +13,10 @@ module Stamps
     class BaseMapping < Hashie::Trash
       include Hashie::Extensions::Dash::IndifferentAccess
 
-      # Override to_hash to remove nil values
-      def to_hash
-        super.reject { |_, v| v.nil? }
-      end
+      # Override to_hash is now handled by improved Hashie::Trash
+      # No need to redefine here since parent class handles it correctly
     end
+
 
     class Account < BaseMapping
       property :Authenticator, :from => :authenticator
